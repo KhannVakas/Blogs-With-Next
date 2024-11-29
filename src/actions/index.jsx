@@ -69,4 +69,67 @@ export async function fetchUsersAction() {
 
 // 3. Edit a user action
 
+export async function editUserAction(
+  currentUserID,
+  formData,
+  pathToRevalidate
+) {
+  await connectToDB();
+  try {
+    const { firstName, lastName, email, address } = formData;
+
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: currentUserID,
+      },
+      { firstName, lastName, email, address },
+      { new: true }
+    );
+    if (updatedUser) {
+      revalidatePath(pathToRevalidate);
+      return {
+        success: true,
+        message: "User Updated Successfully!",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Can't update the user. Please Try again..",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Something Went wrong! Please try again",
+    };
+  }
+}
+
 // 4. Delete a user action
+
+export async function deleteUserAction(currentUserID, pathToRevalidate) {
+  await connectToDB();
+  try {
+    const deletedUser = await User.findByIdAndDelete(currentUserID);
+
+    if (deletedUser) {
+      revalidatePath(pathToRevalidate);
+      return {
+        success: true,
+        message: "User Deleted Sucessfully",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Not able to perform delete operation! Please Try again..",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Something went wrong! Please Try again..",
+    };
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { addNewUserAction } from "@/actions";
+import { addNewUserAction, editUserAction } from "@/actions";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -15,13 +15,18 @@ import {
   addNewUserFormControls,
   addNewUserFormInitialState,
 } from "@/utils/addNewUserFormControls";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { UserContext } from "@/context";
 
 const AddNewUser = () => {
-  const [openPopup, setOpenPopup] = useState(false);
-  const [addNewUserFormData, setAddNewUserFormData] = useState(
-    addNewUserFormInitialState
-  );
+  const {
+    openPopup,
+    setOpenPopup,
+    addNewUserFormData,
+    setAddNewUserFormData,
+    currentEditedID,
+    setCurrentEditedID,
+  } = useContext(UserContext);
   console.log(addNewUserFormData);
 
   const handleSaveButtonValid = () => {
@@ -31,13 +36,18 @@ const AddNewUser = () => {
   };
 
   async function handleAddNewUserAction() {
-    const result = await addNewUserAction(
-      addNewUserFormData,
-      "/user-management"
-    );
+    const result =
+      currentEditedID !== null
+        ? await editUserAction(
+            currentEditedID,
+            addNewUserFormData,
+            "/user-management"
+          )
+        : await addNewUserAction(addNewUserFormData, "/user-management");
     console.log(result);
     setOpenPopup(false);
     setAddNewUserFormData(addNewUserFormInitialState);
+    setCurrentEditedID(null);
   }
   return (
     <div>
@@ -47,11 +57,14 @@ const AddNewUser = () => {
         onOpenChange={() => {
           setOpenPopup(false);
           setAddNewUserFormData(addNewUserFormInitialState);
+          setCurrentEditedID(null);
         }}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>
+              {currentEditedID !== null ? "Edit User" : "Add New User"}
+            </DialogTitle>
           </DialogHeader>
           <form action={handleAddNewUserAction} className="grid gap-4 py-4">
             <div className="">
